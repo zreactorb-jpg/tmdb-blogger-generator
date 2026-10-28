@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TMDB Blogger Studio App</title>
+    <style>
+        :root {
+            --bg-app: #090d16;
+            --surface: #111827;
+            --surface-hover: #1f2937;
+            --border: #374151;
+            --text: #f3f4f6;
+            --text-muted: #9ca3af;
+            --primary: #06b6d4;
+            --primary-hover: #0891b2;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-app);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Barra superior tipo App Header */
+        header {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 50px;
+        }
+
+        .app-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: var(--bg-app);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .nav-tab {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: var(--bg-app);
+        }
+
+        /* Contenedor Principal tipo Dashboard Split */
+        .app-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .app-panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            border-right: 1px solid var(--border);
+        }
+
+        .app-output-panel {
+            width: 45%;
+            background-color: #030712;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Componentes de Formulario */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--success);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 9px 12px;
+            background: var(--bg-app);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 13px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: var(--bg-app);
+            border: none;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-danger { background: var(--danger); color: #fff; padding: 6px 10px; font-size: 11px; width: auto; }
+
+        /* Vista Previa de Tarjeta */
+        .preview-box {
+            display: none;
+            background: var(--surface-hover);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+            gap: 12px;
+        }
+        .preview-box img {
+            width: 50px;
+            height: 75px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .preview-info h4 { margin: 0 0 4px 0; font-size: 14px; color: var(--primary); }
+        .preview-info p { margin: 0; font-size: 11px; color: var(--text-muted); }
+
+        /* Output HTML Area */
+        textarea#output {
+            flex: 1;
+            font-family: 'Fira Code', Consolas, monospace;
+            background: #010409;
+            color: var(--success);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            resize: none;
+            margin-bottom: 12px;
+        }
+
+        .msg {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 6px;
+            font-weight: bold;
+        }
+        .success { color: var(--success); }
+        .error { color: var(--danger); }
+
+        /* Ocultar pestañas inivas */
+        .tab-view { display: none; }
+        .tab-view.active { display: block; }
+    </style>
+</head>
+<body>
+
+<!-- HEADER TIPO APP -->
+<header>
+    <div class="app-title">
+        <span>⚡</span> TMDB Studio App
+    </div>
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchAppTab('crear')">Generador</button>
+        <button class="nav-tab" onclick="switchAppTab('actualizar')">Actualizador</button>
+    </div>
+</header>
+
+<!-- CUERPO PRINCIPAL -->
+<div class="app-body">
+    
+    <!-- PANEL IZQUIERDO: CONTROLES Y FORMULARIOS -->
+    <div class="app-panel">
+        
+        <!-- VISTA CREAR -->
+        <div id="view-crear" class="tab-view active">
+            <div class="card">
+                <div class="card-title">1. Búsqueda y Conexión TMDB</div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>API Key:</label>
+                        <input type="text" id="apiKey" value="451bbdcd8f440cafab96d609066d2a40">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo:</label>
+                        <select id="mediaType">
+                            <option value="tv">Serie / Anime</option>
+                            <option value="movie">Película</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Nombre:</label>
+                        <input type="text" id="query" placeholder="Ej. Silo">
+                    </div>
+                    <div class="form-group">
+                        <label>O ID TMDB exacto:</label>
+                        <input type="text" id="tmdbId" placeholder="Ej. 125988">
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <button class="btn" onclick="buscarContenidoApp()">Cargar Datos</button>
+                    <button class="btn" style="background:var(--border); color:var(--text);" onclick="resetApp()">Limpiar</button>
+                </div>
+                <div id="appMsg" class="msg"></div>
+            </div>
+
+            <!-- Previsualización -->
+            <div id="appPreview" class="preview-box">
+                <img id="prevImgApp" src="" alt="">
+                <div class="preview-info">
+                    <h4 id="prevTitleApp"></h4>
+                    <p id="prevDescApp"></p>
+                </div>
+            </div>
+
+            <!-- Panel Configuración Dinámica (Oculto hasta cargar) -->
+            <div id="dynamicConfigPanel" style="display: none;">
+                
+                <div class="card">
+                    <div class="card-title">2. Telegram & Estreno</div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Link Canal:</label>
+                            <input type="text" id="telegramLink" value="https://t.me/MoviesHD_Oficial">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha Estreno:</label>
+                            <input type="text" id="fechaEstreno" placeholder="Ej. 5 de octubre de 2026">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Estado Episodio:</label>
+                        <input type="text" id="estadoEpisodio" placeholder="Ej. EP. 2 en: ¡Ya disponible!">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">3. Servidores VIP</div>
+                    <div class="grid-2">
+                        <div class="form-group"><label>Terabox:</label><input type="text" id="linkTerabox" value="#"></div>
+                        <div class="form-group"><label>GDrive:</label><input type="text" id="linkGDrive" value="#"></div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group" style="margin-bottom:0;"><label>Mega:</label><input type="text" id="linkMega" value="#"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Contraseña VIP:</label><input type="text" id="vipKey" placeholder="Opcional"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">4. Enlaces Free / Temporadas</div>
+                    <div id="freeLinksContainer"></div>
+                </div>
+
+                <button class="btn btn-success" onclick="generarHtmlApp()">✨ Generar Código HTML Final</button>
+            </div>
+        </div>
+
+        <!-- VISTA ACTUALIZAR -->
+        <div id="view-actualizar" class="tab-view">
+            <div class="card">
+                <div class="card-title">Actualizar Post de Blogger</div>
+                <p style="font-size: 12px; color: var(--text-muted);">Pega el código HTML de tu entrada existente para sincronizarla y modificar enlaces:</p>
+                <div class="form-group">
+                    <textarea id="htmlExistenteApp" style="height: 180px;" placeholder="Pega el código HTML aquí..."></textarea>
+                </div>
+                <button class="btn" onclick="sincronizarPostApp()">Analizar Publicación</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- PANEL DERECHO: SALIDA DE CÓDIGO HTML -->
+    <div class="app-output-panel">
+        <label>Código HTML para Blogger:</label>
+        <textarea id="output" readonly placeholder="El código aparecerá aquí..."></textarea>
+        <button class="btn btn-success" onclick="copiarAlPortapapelesApp()">📋 Copiar Código</button>
+        <div id="copyMsg" class="msg"></div>
+    </div>
+
+</div>
+
+<script>
+    let appData = null;
+
+    function switchAppTab(tab) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+        if (tab === 'crear') {
+            document.querySelectorAll('.nav-tab')[0].classList.add('active');
+            document.getElementById('view-crear').classList.add('active');
+        } else {
+            document.querySelectorAll('.nav-tab')[1].classList.add('active');
+            document.getElementById('view-actualizar').classList.add('active');
+        }
+    }
+
+    function resetApp() {
+        document.getElementById('query').value = '';
+        document.getElementById('tmdbId').value = '';
+        document.getElementById('output').value = '';
+        document.getElementById('appMsg').innerText = '';
+        document.getElementById('appPreview').style.display = 'none';
+        document.getElementById('dynamicConfigPanel').style.display = 'none';
+        appData = null;
+    }
+
+    async function buscarContenidoApp() {
+        const apiKey = document.getElementById('apiKey').value.trim();
+        const mediaType = document.getElementById('mediaType').value;
+        const query = document.getElementById('query').value.trim();
+        const tmdbId = document.getElementById('tmdbId').value.trim();
+        const msg = document.getElementById('appMsg');
+
+        msg.className = "msg";
+        msg.innerText = "Buscando...";
+
+        if (!apiKey) {
+            msg.className = "msg error";
+            msg.innerText = "Falta la API Key.";
+            return;
+        }
+
+        try {
+            let idBuscado = tmdbId;
+            if (!idBuscado) {
+                if (!query) {
+                    msg.className = "msg error";
+                    msg.innerText = "Introduce un nombre o ID.";
+                    return;
+                }
+                const res = await fetch(`https://api.themoviedb.org/3/search/${mediaType}?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=es-ES`);
+                const data = await res.json();
+                if (!data.results || data.results.length === 0) {
+                    msg.className = "msg error";
+                    msg.innerText = "Sin resultados.";
+                    return;
+                }
+                idBuscado = data.results[0].id;
+            }
+
+            const [resDet, resVid, resCred, resProv] = await Promise.all([
+                fetch(`https://api.themoviedb.org/3/${mediaType}/${idBuscado}?api_key=${apiKey}&language=es-ES`),
+                fetch(`https://api.themoviedb.org/3/${mediaType}/${idBuscado}/videos?api_key=${apiKey}`),
+                fetch(`https://api.themoviedb.org/3/${mediaType}/${idBuscado}/credits?api_key=${apiKey}&language=es-ES`),
+                fetch(`https://api.themoviedb.org/3/${mediaType}/${idBuscado}/watch/providers?api_key=${apiKey}`)
+            ]);
+
+            const details = await resDet.json();
+            const provData = await resProv.json();
+
+            let plataforma = "";
+            if (provData.results) {
+                const reg = provData.results.ES || provData.results.MX || provData.results.US;
+                if (reg && reg.flatrate) plataforma = reg.flatrate[0].provider_name;
+            }
+
+            let temps = [];
+            if (mediaType === 'tv') {
+                temps = details.seasons ? details.seasons.filter(s => s.season_number > 0) : [{ season_number: 1 }];
+            }
+
+            const vids = await resVid.json();
+            const creds = await resCred.json();
+            let trailer = "";
+            if (vids.results) {
+                const tObj = vids.results.find(v => v.type === "Trailer" && v.site === "YouTube");
+                if (tObj) trailer = tObj.key;
+            }
+
+            appData = {
+                titulo: details.title || details.name || "",
+                tipo: mediaType,
+                sinopsis: details.overview || "Sin sinopsis.",
+                poster: details.poster_path ? `https://image.tmdb.org/t/p/original${details.poster_path}` : "",
+                trailer: trailer,
+                temporadas: temps,
+                plataforma: plataforma,
+                cast: creds.cast ? creds.cast.slice(0, 6) : []
+            };
+
+            document.getElementById('prevImgApp').src = appData.poster;
+            document.getElementById('prevTitleApp').innerText = appData.titulo;
+            document.getElementById('prevDescApp').innerText = `Tipo: ${mediaType === 'tv' ? 'Serie' : 'Película'} | Plataforma: ${plataforma || 'N/A'}`;
+            document.getElementById('appPreview').style.display = 'flex';
+
+            construirFormFreeApp(appData);
+            document.getElementById('dynamicConfigPanel').style.display = 'block';
+            msg.className = "msg success";
+            msg.innerText = "¡Cargado con éxito!";
+
+        } catch (err) {
+            console.error(err);
+            msg.className = "msg error";
+            msg.innerText = "Error de conexión.";
+        }
+    }
+
+    function construirFormFreeApp(data) {
+        let html = "";
+        if (data.tipo === 'movie') {
+            html = `
+            <div id="row_m_lat" class="form-group grid-2" style="align-items:flex-end;">
+                <div><label>Latino Terabox:</label><input type="text" id="m_lat" value="#"></div>
+                <div><button class="btn btn-danger" onclick="document.getElementById('row_m_lat').remove()">Borrar</button></div>
+            </div>
+            <div id="row_m_esp" class="form-group grid-2" style="align-items:flex-end;">
+                <div><label>Español Rapidgator:</label><input type="text" id="m_esp" value="#"></div>
+                <div><button class="btn btn-danger" onclick="document.getElementById('row_m_esp').remove()">Borrar</button></div>
+            </div>
+            <div id="row_m_sub" class="form-group grid-2" style="align-items:flex-end;">
+                <div><label>Sub Transfer:</label><input type="text" id="m_sub" value="#"></div>
+                <div><button class="btn btn-danger" onclick="document.getElementById('row_m_sub').remove()">Borrar</button></div>
+            </div>`;
+        } else {
+            data.temporadas.forEach(t => {
+                let n = t.season_number;
+                html += `
+                <div id="box_t_${n}" style="border:1px dashed var(--border); padding:10px; border-radius:6px; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-weight:bold; color:var(--primary);">Temporada ${n}</span>
+                        <button class="btn btn-danger" onclick="document.getElementById('box_t_${n}').remove()">Quitar Temp</button>
+                    </div>
+                    <div class="form-group"><label>Latino:</label><input type="text" id="t_${n}_lat" value="#"></div>
+                    <div class="form-group"><label>Español:</label><input type="text" id="t_${n}_esp" value="#"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Sub:</label><input type="text" id="t_${n}_sub" value="#"></div>
+                </div>`;
+            });
+        }
+        document.getElementById('freeLinksContainer').innerHTML = html;
+    }
+
+    function sincronizarPostApp() {
+        const code = document.getElementById('htmlExistenteApp').value;
+        if (!code) { alert('Pega el código HTML.'); return; }
+        const mTitle = code.match(/var\s+label_episode\s*=\s*'([^']+)'/);
+        const mImg = code.match(/<img[^>]+src="([^">]+)"/);
+
+        appData = {
+            titulo: mTitle ? mTitle[1] : "Título Sincronizado",
+            tipo: code.includes("Season") ? "tv" : "movie",
+            sinopsis: "Sincronizado desde post existente.",
+            poster: mImg ? mImg[1] : "",
+            trailer: "8ZYhuvIv1pA",
+            temporadas: [{ season_number: 1 }],
+            plataforma: "Streaming",
+            cast: []
+        };
+
+        switchAppTab('crear');
+        document.getElementById('dynamicConfigPanel').style.display = 'block';
+        document.getElementById('appMsg').className = "msg success";
+        document.getElementById('appMsg').innerText = "¡Sincronizado! Ya puedes generar la nueva versión.";
+    }
+
+    function generarHtmlApp() {
+        if (!appData) return;
+        const tg = document.getElementById('telegramLink').value;
+        const estreno = document.getElementById('fechaEstreno').value;
+        const estado = document.getElementById('estadoEpisodio').value;
+        const tera = document.getElementById('linkTerabox').value;
+        const gdr = document.getElementById('linkGDrive').value;
+        const meg = document.getElementById('linkMega').value;
+        const pass = document.getElementById('vipKey').value.trim();
+
+        let actorsHtml = "";
+        if (appData.cast) {
+            appData.cast.forEach(a => {
+                let img = a.profile_path ? `https://image.tmdb.org/t/p/w185${a.profile_path}` : 'https://via.placeholder.com/150';
+                actorsHtml += `<div class="charaitem"><div class="charaitembox"><div class="charasubitem chara"><div class="characover"><img src="${img}"/></div><div class="charainfo"><span class="charaname">${a.character||"Rol"}</span><span class="chararole">Main Role</span></div></div><div class="charasubitem charactor"><div class="characover"><img src="${img}"/></div><div class="charainfo"><span class="charaname">${a.name||"Actor"}</span><span class="chararole">Japanese</span></div></div></div></div>`;
+            });
+        }
+
+        let platHtml = appData.plataforma ? `\n<div style="background:#111827;border:1px solid #1f2937;border-radius:8px;padding:15px;margin-bottom:20px;"><h4 style="color:#00ffaa;margin:0 0 8px 0;font-size:13px;text-transform:uppercase;">📺 PLATAFORMAS OFICIALES:</h4><span style="background:#1f2937;color:#fff;padding:6px 14px;border-radius:6px;font-weight:bold;font-size:13px;display:inline-block;">${appData.plataforma}</span></div>` : "";
+        
+        let tgHtml = (tg || estreno || estado) ? `\n<div style="background:#111827;border:1px solid #1f2937;border-radius:8px;padding:15px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;"><div><h4 style="color:#00a2ff;margin:0 0 8px 0;font-size:14px;text-transform:uppercase;">✈️ TELEGRAM CHANNEL</h4><a href="${tg}" target="_blank" style="background:#0088cc;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:13px;display:inline-block;">✈️ Unirse al Canal de Telegram</a></div><div style="display:flex;gap:8px;">${estreno?`<span style="background:rgba(0,255,170,0.1);border:1px solid #00ffaa;color:#00ffaa;padding:6px 12px;border-radius:6px;font-size:13px;font-weight:bold;">📅 Estreno: ${estreno}</span>`:``}${estado?`<span style="background:rgba(255,0,85,0.1);border:1px solid #ff0055;color:#ff0055;padding:6px 12px;border-radius:6px;font-size:13px;font-weight:bold;">⚡ ${estado}</span>`:``}</div></div>` : "";
+
+        let vipInner = pass ? `<div style="padding:25px 15px;text-align:center;"><div style="color:#00ffaa;font-weight:bold;letter-spacing:1px;margin-bottom:12px;font-size:14px;text-transform:uppercase;">CONTENIDO PROTEGIDO</div><div style="display:inline-block;border:2px solid #ff0055;border-radius:6px;padding:8px 25px;background:#000;color:#fff;font-weight:bold;letter-spacing:2px;margin-bottom:15px;font-size:14px;">${pass}</div><div><a href="${tera}" target="_blank" style="background:linear-gradient(135deg,#ff0055,#ff00aa);color:white;padding:10px 30px;font-weight:bold;font-size:13px;border-radius:4px;text-transform:uppercase;text-decoration:none;display:inline-block;">DESBLOQUEAR</a></div></div>` : `<div class="dl-box2" style="padding:10px;"><ul><li class="head" style="background:rgba(0,242,254,0.1);font-weight:bold;"><span class="s">Server</span><span class="q">Quality</span><span class="b">Download</span></li><li><span class="s"><span class="Terabox">Terabox</span></span><span class="q">360p</span><span class="b"><a href="${tera}" rel="nofollow" style="color:#00f2fe;font-weight:bold;" target="_blank">Download</a></span></li><li><span class="s"><span class="gdrive">GDrive</span></span><span class="q">480p HD</span><span class="b"><a href="${gdr}" rel="nofollow" style="color:#00f2fe;font-weight:bold;" target="_blank">Download</a></span></li><li><span class="s"><span class="mega">Mega</span></span><span class="q">720p</span><span class="b"><a href="${meg}" rel="nofollow" style="color:#00f2fe;font-weight:bold;" target="_blank">Download</a></span></li></ul></div>`;
+
+        let freeHtml = "";
+        if (appData.tipo === 'movie') {
+            let lat = document.getElementById('m_lat')?document.getElementById('m_lat').value:"";
+            let esp = document.getElementById('m_esp')?document.getElementById('m_esp').value:"";
+            let sub = document.getElementById('m_sub')?document.getElementById('m_sub').value:"";
+            let lnks = "";
+            if(lat) lnks += `<a href="${lat}" rel="nofollow" target="_blank" style="background:#0284c7;color:white;padding:6px 12px;border-radius:4px;text-decoration:none;font-size:12px;font-weight:bold;">Latino Terabox</a>`;
+            if(esp) lnks += `<a href="${esp}" rel="nofollow" target="_blank" style="background:#7e22ce;color:white;padding:6px 12px;border-radius:4px;text-decoration:none;font-size:12px;font-weight:bold;">Español Rapidgator</a>`;
+            if(sub) lnks += `<a href="${sub}" rel="nofollow" target="_blank" style="background:#15803d;color:white;padding:6px 12px;border-radius:4px;text-decoration:none;font-size:12px;font-weight:bold;">Sub Transfer</a>`;
+            if(lnks) freeHtml += `<li style="background:#1e293b;border:1px solid #334155;padding:12px;border-radius:6px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;"><b style="color:#f8fafc;">Película Completa</b><div style="display:flex;gap:8px;">${lnks}</div></li>`;
+        } else {
+            document.querySelectorAll('[id^="box_t_"]').forEach(box => {
+                let n = box.id.replace('box_t_', '');
+                let lat = document.getElementById(`t_${n}_lat`)?document.getElementById(`t_${n}_lat`).value:"";
+                let esp = document.getElementById(`t_${n}_esp`)?document.getElementById(`t_${n}_esp`).value:"";
+                let sub = document.getElementById(`t_${n}_sub`)?document.getElementById(`t_${n}_sub`).value:"";
+                let strN = parseInt(n) < 10 ? '0' + n : n;
+                let lnks = "";
+                if(lat) lnks += `<a href="${lat}" rel="nofollow" target="_blank" style="background:#0284c7;color:white;padding:6px 12px;border-radius:4px;text-decoration:none;font-size:12px;font-weight:bold;">Latino Terabox</a>`;
+                if(esp) lnks += `<a href="${esp}" rel="nofollow" target="_blank" style="background:#7e22ce;color:white;padding:6px 12px;border-radius:4px;text-decoration:none;font-size:12px;font-weight:bold;">Español Rapidgator</a>`;
+                if(sub) lnks += `<a href="${sub}" rel="nofollow" target="_blank" style="background:#15803d;color:white;padding:6px 12px;border-radius:4px;text-decoration:none;font-size:12px;font-weight:bold;">Sub Transfer</a>`;
+                if(lnks) freeHtml += `<li style="background:#1e293b;border:1px solid #334155;padding:12px;border-radius:6px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;"><b style="color:#f8fafc;">Season ${strN}</b><div style="display:flex;gap:8px;">${lnks}</div></li>`;
+            });
+        }
+
+        let final = `<!--[Thumbnail]-->\n<div class="separator" style="clear: both; text-align: center;"><img src="${appData.poster}" /></div>\n\n<!--[Synopsis]-->\n<div class="sinoposis"><p>${appData.sinopsis}</p></div>\n<span><!--more--></span>\n\n${platHtml}\n${tgHtml}\n\n<!--[Trailer]-->\n<div class="bixbox trailer"><div class="ignielYTlazy" data-embed="${appData.trailer}"><span class="button"></span></div></div>\n\n<!--[Characters]-->\n<div class="bixbox charvoice"><h2>Characters &amp; Voice Actors</h2><div class="charalist">${actorsHtml}</div></div>\n\n<!--[Box Download VIP]-->\n<div class="bixbox download" style="border-radius:8px;border:1px solid #30363d;background:#0b0e14;box-shadow:0 4px 20px rgba(0,0,0,0.5);margin-bottom:25px;overflow:hidden;">\n<h2 class="heading" style="background:#000;color:#00ffaa;margin:0px;padding:14px;text-align:center;letter-spacing:3px;font-size:16px;border-bottom:1px solid #1f2937;">D O W N L O A D   V I P</h2>\n${vipInner}\n</div>`;
+
+        if(freeHtml) {
+            final += `\n\n<!--[Box Download Free]-->\n<div class="bixbox download" style="border:1px solid #1f2937;background:#0f172a;border-radius:8px;padding:15px;margin-bottom:25px;">\n<h3 style="text-align:center;color:#00f2fe;margin-top:0;text-transform:uppercase;letter-spacing:1px;">Download FREE</h3>\n<div class="dl" style="margin:10px 0;"><ul style="list-style:none;padding:0;">\n${freeHtml}\n</ul></div>\n</div>`;
+        }
+
+        final += `\n\n<!--Episode List-->\n<script type="text/javascript">var label_episode = '${appData.titulo}';<\/script>`;
+
+        document.getElementById('output').value = final;
+    }
+
+    function copiarAlPortapapelesApp() {
+        const out = document.getElementById('output');
+        if (!out.value) return;
+        out.select();
+        document.execCommand('copy');
+        alert("¡Código copiado al portapapeles!");
+    }
+</script>
+
+</body>
+</html>
